@@ -8,6 +8,7 @@ credit to invalid for namek macro
 Contributions:
 base code: faxi
 configs: keirahela
+update tp to spawn & cursed womb: ryn
 
 */
 
