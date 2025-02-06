@@ -116,8 +116,11 @@ MainGUI.Add("GroupBox", "x830 y540 w300 h80 c24be16 ", "Keybinds")
 KeyBinds := MainGUI.Add("Text", "x830 y560 w300 h300 r7 cffffff +BackgroundTrans +Center", "F1 - Fix Roblox Position `n F2 - Start Macro `n F3 - Stop Macro")
 
 MainGUI.Add("Text", "x10 y5 h60 c2bff00 +BackgroundTrans", "Updated by Ryn to support Cursed Womb") ; added by ryn
-KeyFarm := MainGUI.Add("Checkbox", "x700 y640 w105 c24be16 ", "Cursed Womb") ; added by ryn
+KeyFarm := MainGUI.Add("Checkbox", "x585 y640 w105 c24be16 ", "Cursed Womb") ; added by ryn
 KeyFarm.OnEvent('Click', (*) => changeKeyFarm())
+
+SaveConfigBttn := MainGUI.Add("Button", "x700 y635 w95 h25 cffffff +Center", "Save config")
+SaveConfigBttn.OnEvent("Click", (*) => SaveConfigToFile("Lib\Settings\config.txt"))
 
 MainGUI.SetFont("s16 bold", "Segoe UI")
 
@@ -125,7 +128,6 @@ MainGUI.Add("Text", "x12 y632 w800 c24be16 +BackgroundTrans", "👻 Haunted Acad
 
 changeKeyFarm() {
     global keyFarmEnabled := KeyFarm.Value
-    SaveConfigToFile("Lib\Settings\config.txt")
 }
 
 MainGUI.Show("x27 y15 w1150 h665")

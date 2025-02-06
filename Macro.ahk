@@ -224,7 +224,7 @@ StopMacro() {
     Reload()
 }
 ; Define the rectangle coordinates
-global startX := 200, startY := 290, endX := 450, endY := 200
+global startX := 200, startY := 280, endX := 450, endY := 200
 global step := 50 ; Step size for grid traversal
 global successfulCoordinates := [] ; Array to store successful placements
 global successThreshold := 3 ; Number of successful placements needed
@@ -755,7 +755,7 @@ OnSpawnSetup() {
             SendInput ("{Left down}")
             Sleep 750
             SendInput ("{Left up}")
-            KeyWait "Left" ; Wait for "d" to be fully processed
+            KeyWait "Left" ; Wait for key to be fully processed
         }
     }
 
