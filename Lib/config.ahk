@@ -68,6 +68,7 @@ SaveLocal(*) {
     global enabled1, enabled2, enabled3, enabled4, enabled5, enabled6
     global hill1, hill2, hill3, hill4, hill5, hill6
     global placement1, placement2, placement3, placement4, placement5, placement6
+    global KeyFarm, UnitTimer
 
     SaveConfigToFile("Lib\Settings\config.txt")
     SaveWebhookSettings(false)
@@ -77,7 +78,7 @@ LoadLocal(*) {
     global enabled1, enabled2, enabled3, enabled4, enabled5, enabled6
     global hill1, hill2, hill3, hill4, hill5, hill6
     global placement1, placement2, placement3, placement4, placement5, placement6
-    global KeyFarm
+    global KeyFarm, UnitTimer
 
     LoadConfigFromFile("Lib\Settings\config.txt")
     LoadWebhookSettings(false)

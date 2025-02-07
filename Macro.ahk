@@ -318,7 +318,6 @@ IsPlacementSuccessful() {
 
 TryPlacingUnits() {
     global startX, startY, endX, endY, step, successfulCoordinates, Hillx, Hilly, HillStartingX
-    successfulCoordinates := [] ; Reset successfulCoordinates for each run
     HillStartingX := ""
 
     x := startX ; Initialize x only once
@@ -503,14 +502,11 @@ ShouldStopUpgrading(sleepamount := 300) {
         if (WebhookCheckbox.Value = 1) {
             SendWebhook()
         }
-        BetterClick(485, 115)
-        return true
-    }
-    if CheckForLobbyButton() {
-        if (WebhookCheckbox.Value = 1) {
-            SendWebhook()
+        if (keyFound) {
+            BetterClick(376, 117) ;Click Lobby
+        } else {
+            BetterClick(485, 115) ;Click Replay
         }
-        BetterClick(376, 117)
         return true
     }
 }
@@ -617,7 +613,7 @@ CheckForReplayButton() {
     if !IsFound {
         return false
     }
-    if (ok :=FindText(&X, &Y, 435-150000, 168-150000, 435+150000, 168+150000, 0, 0, ReplayText)) {
+    if (ok :=FindText(&X, &Y, 435-150000, 168-150000, 435+150000, 168+150000, 0, 0, keyFound ? LobbyText : ReplayText)) {
         return true
     }
     return false
