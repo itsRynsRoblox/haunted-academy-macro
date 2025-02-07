@@ -187,7 +187,7 @@ GoToRaids() {
             Sleep 150
             SendInput ("{WheelDown 1}") ; Scrolling to reach Haunted Acadamy Box
         }
-    
+        Sleep 1000
         BetterClick(700,425) ; Haunted Academy Box
         Sleep 1000
     
@@ -205,7 +205,7 @@ GoToRaids() {
     }
     LoadedLoop()
     OnSpawnSetup()
-    PressVoteStart()
+    ;PressVoteStart()
     StartedLoop()
     TryPlacingUnits()
 
@@ -251,7 +251,7 @@ PlaceFirstHillUnit(slot := 1) {
     global Hilly
     SendInput(slot)
     Sleep 100
-    PixelSearch(&Hx, &Hy, 400, 160, 600, 235, 0x06B10E, 5)
+    PixelSearch(&Hx, &Hy, 400, 160, 600, 235, keyFarmEnabled & keyFound ? 0x04A302 : 0x06B10E, 5) ;Credit: zredlohtop for updating the colors
     if (Hx == "", Hy == "") {
         return false
     }
@@ -789,39 +789,28 @@ OnSpawnSetup() {
     Sleep 200
     TPtoSpawn()
     Sleep 200
-    if (keyFarmEnabled && keyFound) {
-        ; Walk to the right
-        SendInput ("{d down}")
-        sleep (3500)
-        SendInput ("{d up}")
-        Sleep 200
-        SendInput ("{w down}")
-        sleep (300)
-        SendInput ("{w up}")
-    } else {
-        loop {
-            if PixelSearch(&Px, &Py, 340, 0, 520, 25, 0x091512, 3) {
-                AddToLog("Correct Angle")
-                break
-            }
-            else {
-                AddToLog("Incorrect Angle. Turning again.")
-                SendInput ("{Left up}")
-                Sleep 200
-                SendInput ("{Left down}")
-                Sleep 750
-                SendInput ("{Left up}")
-                KeyWait "Left" ; Wait for key to be fully processed
-            }
+    loop {
+        if PixelSearch(&Px, &Py, 558, 335, 694, 369, keyFarmEnabled && keyFound ? 0x1D1414 : 0x1E1820, 3) { ;Credit zredlohtop for updating the colors
+            AddToLog("Correct Angle")
+            break
         }
-    
-        SendInput ("{d up}")
-        Sleep 100
-        SendInput ("{d down}")
-        Sleep 5000
-        SendInput ("{d up}")
-        KeyWait "d"
+        else {
+            AddToLog("Incorrect Angle. Turning again.")
+            SendInput ("{Left up}")
+            Sleep 200
+            SendInput ("{Left down}")
+            Sleep 750
+            SendInput ("{Left up}")
+            KeyWait "Left" ; Wait for key to be fully processed
+        }
     }
+
+    SendInput ("{d up}")
+    Sleep 100
+    SendInput ("{d down}")
+    Sleep 5000
+    SendInput ("{d up}")
+    KeyWait "d"
 }
 
 Reconnect() {
