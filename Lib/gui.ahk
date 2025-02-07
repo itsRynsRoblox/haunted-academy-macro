@@ -117,7 +117,8 @@ KeyBinds := MainGUI.Add("Text", "x830 y560 w300 h300 r7 cffffff +BackgroundTrans
 
 MainGUI.Add("Text", "x10 y5 h60 c2bff00 +BackgroundTrans", "Latest Update: Added Curse Womb Support") ; added by ryn
 KeyFarm := MainGUI.Add("Checkbox", "x585 y640 w105 c24be16 ", "Cursed Womb") ; added by ryn
-KeyFarm.OnEvent('Click', (*) => changeKeyFarm())
+;KeyFarm.OnEvent('Click', (*) => changeKeyFarm())
+KeyFarm.OnEvent('Click', (*) => AddToLog("This has been disabled till I fix the pixel search, sorry"))
 
 SaveConfigBttn := MainGUI.Add("Button", "x700 y635 w95 h25 cffffff +Center", "Save config")
 SaveConfigBttn.OnEvent("Click", (*) => SaveConfigToFile("Lib\Settings\config.txt"))

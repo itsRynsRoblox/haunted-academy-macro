@@ -40,10 +40,11 @@ ReplayText :="|<>*101$71.Tk0000Dk0001zs0000FU00000Q0001V000000A00032000000M00064
 DeathText := "|<>*100$22.zzzzUzUw3w3l7l6ASAMtstXbXaASAQFgFkAEDUlUzzzzU"
 Text:="|<>*30$71.0000007zzzzy000000Dzzzzw000000Tzzzzs000000zzzzzk000001zzzzzU000003zzzzz0000007zzzzy000000Dzzzzw000000Tzzzzs000000zzzzzk000001zzzzzU000003zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
 Spawn:="|<>*113$63.zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzw3zzzzzzzzz0Dzzzzzzzzs1zzzzzzzzz7TTzxvzizzsTk7U4QMU7z0S0M0V240zw1k1068FU3zs6C8kk0AQTzslk7701XXz7648ks0QQTs0k307V3XXz0C0Q0wMwQTy3lDl7nbXXzzyDzzzzzzzzzlzzzzzzzzzyDzzzzzzzzznzzzzzzzw"
-KeyText:="|<>*97$71.zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzbyTzznzDzzzz7szzX3yDzzzy7Vzz77zzzzzw63TQCDzxzzzsA4SE41nUzzzk0AMU83a0zzzY6Mlll3AHzzzA8s7bb6FzzzyQlkD7CAVzzzwTXky6QNUDzzsz7Vw4Ml0TzznzD3wNlbVzzzzzyDzzzzzzzzzzwTzzzzzzzzzzlzzzzzzzzzzzrzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
+KeyText:="|<>*116$71.zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzztzbzzwyTDzzzly7zzksQDzzzXy7zzlkszzzz7yDzzX1VlzzyDyDzz2120k0A1wTzz0081U001szzy00E00001lzzw003UA833Xzzw6270Mk777zzsA6A0lU4CDzzksA0FX00QTzzlsw1X601szzzblw76CE7lzzzzzzzzzzzbzzzzzzzzzzyDzzzzzzzzzzkzzzzzzzzzzzXzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
 
 global lose_streak := 0
 global keyFarmEnabled := KeyFarm.Value
+global keyFound := 1
 
 SetupMacro() {
     if ControlGetVisible(keybindsGui) {
@@ -109,6 +110,7 @@ BetterClick(x, y, LR := "Left") { ; credits to yuh for this, lowk a life saver
 }
 
 GoToRaids() {
+    global keyFound
     SendInput ("{Tab}")
     AddToLog("For support, make sure to click on the discord icon above")
     loop {
@@ -125,12 +127,12 @@ GoToRaids() {
             BetterClick(406, 497)
             Sleep 3000
         }
-        if (keyFarmEnabled) {
+        if (keyFarmEnabled && keyFound) {
             AddToLog("Attempting to go to Cursed Womb...")
         } else {
             AddToLog("Attempting to go to Cursed Infinite...")
         }
-        if (keyFarmEnabled) {
+        if (keyFarmEnabled && keyFound) {
             ; go to cursed womb dungeon
             BetterClick(89, 302)
             Sleep 2000
@@ -147,15 +149,27 @@ GoToRaids() {
             SendInput ("{s up}")
             KeyWait "s" ; Wait for "d" to be fully processed
             Sleep 1200
-            BetterClick(216, 285) ; click key location
+            ;BetterClick(216, 285) ; click key location
+            BetterClick(287, 285) ; click key #2 location
             Sleep 200
-            if (ok:=FindText(&X, &Y, 328-150000, 326-150000, 328+150000, 326+150000, 0, 0, KeyText)) {
+            if (ok:=FindText(&X, &Y, 433-150000, 305-150000, 433+150000, 305+150000, 0, 0, KeyText)) {
                 AddToLog("Found a key, attempting to start...")
                 BetterClick(350, 375) ; click select
                 Sleep 35000
             } else {
-                AddToLog("Didn't find a key, going back to infinite")
-                changeKeyFarm()
+                AddToLog("Didn't find cursed womb key, trying another..")
+                BetterClick(287, 285) ; click key #2 location
+                Sleep 200
+            }
+            if (ok:=FindText(&X, &Y, 433-150000, 305-150000, 433+150000, 305+150000, 0, 0, KeyText)) {
+                AddToLog("Found a key, attempting to start...")
+                BetterClick(418, 370) ; click select
+                Sleep 35000
+            } else {
+                AddToLog("Didn't find a cursed womb key, returning to infinite...")
+                BetterClick(661, 205)
+                Sleep 200
+                keyFound := 0
             }
         } else {
             ; go to play area
@@ -744,7 +758,7 @@ OnSpawnSetup() {
     TPtoSpawn()
     Sleep 200
     loop {
-        if PixelSearch(&Px, &Py, 340, 0, 520, 25, 0x091512, 3){
+        if PixelSearch(&Px, &Py, 340, 0, 520, 25, 0x091512, 3) {
             AddToLog("Correct Angle")
             break
         }
