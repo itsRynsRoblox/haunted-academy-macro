@@ -6,6 +6,7 @@ SaveConfig() {
     global enabled1, enabled2, enabled3, enabled4, enabled5, enabled6
     global hill1, hill2, hill3, hill4, hill5, hill6
     global placement1, placement2, placement3, placement4, placement5, placement6
+    global UnitTimer
     return
 }
 
@@ -13,10 +14,12 @@ LoadConfig() {
     global enabled1, enabled2, enabled3, enabled4, enabled5, enabled6
     global hill1, hill2, hill3, hill4, hill5, hill6
     global placement1, placement2, placement3, placement4, placement5, placement6
+    global UnitTimer
     return
 }
 
 SaveConfigToFile(filePath) {
+    global UnitTimer
     File := FileOpen(filePath, "w")
     if !File {
         AddToLog("Failed to save the configuration.")
@@ -44,6 +47,15 @@ SaveConfigToFile(filePath) {
     File.WriteLine("Placement4=" placement4.Text)
     File.WriteLine("Placement5=" placement5.Text)
     File.WriteLine("Placement6=" placement6.Text)
+
+    File.WriteLine("[UnitPriority]")
+    For index, value in unitPriorityOrder {
+        File.WriteLine("UnitPriorityOrder" . index + 1 . "=" . value)
+    }
+    File.WriteLine("UUPEnabled=" UUPCheckbox.Value)
+
+    File.WriteLine("[UnitTimer]")
+    File.WriteLine("Time=" UnitTimer.Value)
 
     File.WriteLine("[KeyFarm]")
     File.WriteLine("Enabled=" KeyFarm.Value)
@@ -123,6 +135,27 @@ LoadConfigFromFile(filePath) {
             if (section = "KeyFarm") {
                 if RegExMatch(line, "Enabled=(\d+)", &match) {
                     KeyFarm.Value := match.1
+                }
+            }
+            if (section = "UnitTimer") {
+                if RegExMatch(line, "Time=(\d+)", &match) {
+                    UnitTimer.Value := match.1 ; Set the checkbox value
+                }
+            }
+            if (section = "UnitPriority") {
+                if RegExMatch(line, "UnitPriorityOrder(\d+)=(\w+)", &match) {
+                    slot := match.1
+                    value := match.2
+
+                    unitPriorityOrder[slot - 1] := value
+
+                    dropDown := unitUpgradePrioritydropDowns[slot - 1]
+                    if (dropDown) {
+                        dropDown.Text := value
+                    }
+                }
+                if RegExMatch(line, "UUPEnabled=(\d+)", &match) { ; unit priority toggle
+                    UUPCheckbox.Value := match.1 ; Set the checkbox value
                 }
             }
         }

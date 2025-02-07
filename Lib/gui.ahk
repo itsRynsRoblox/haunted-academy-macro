@@ -4,6 +4,8 @@
 #Include %A_ScriptDir%\Lib\config.ahk
 #Include %A_ScriptDir%\Lib\mainsettingsui.ahk
 #Include %A_ScriptDir%\Lib\keybinds.ahk
+#Include %A_ScriptDir%\Lib\PriorityPicker.ahk
+#Include %A_ScriptDir%\Lib\UnitUpgradePriority.ahk
 
 TaxiURL := "https://discord.gg/UB9AaPzqdq"
 global InvalidURL := "https://discord.gg/2kWhUD35qK"
@@ -59,11 +61,14 @@ MainSettings.Add("Text", "x10 y20 w340 h130 +Center cffffff", "Settings")
 Webhookbttn := MainSettings.Add("Button", "x110 y45 w150", "Webhook Settings")
 Webhookbttn.OnEvent("Click", (*) => OpenWebhooks())
 
-SendChatBttn := MainSettings.Add("Button", "x110 y95 w150", "Send Chat")
-SendChatBttn.OnEvent("Click", (*) => OpenSendChat())
+SendChatBttn := MainSettings.Add("Button", "x110 y95 w150", "Upgrade Priority")
+SendChatBttn.OnEvent("Click", (*) => OpenUnitUpgrade())
 
 SendChatBttn := MainSettings.Add("Button", "x110 y140 w150", "Keybinds")
 SendChatBttn.OnEvent("Click", (*) => OpenKeybinds())
+
+UnitTimer := MainGui.Add("DropDownList", "x700 y667 w95 Choose2", ["1.5s", "2s (Default)", "2.5s", "3s"])
+MainGUI.Add("Text", "x600 y670 h60 c24be16 +BackgroundTrans", "Placement Speed")
 
 ; Show the main settings GUI
 ; Show the initial GUI
@@ -117,8 +122,8 @@ KeyBinds := MainGUI.Add("Text", "x830 y560 w300 h300 r7 cffffff +BackgroundTrans
 
 MainGUI.Add("Text", "x10 y5 h60 c2bff00 +BackgroundTrans", "Latest Update: Added Curse Womb Support") ; added by ryn
 KeyFarm := MainGUI.Add("Checkbox", "x585 y640 w105 c24be16 ", "Cursed Womb") ; added by ryn
-;KeyFarm.OnEvent('Click', (*) => changeKeyFarm())
-KeyFarm.OnEvent('Click', (*) => AddToLog("This has been disabled till I fix the pixel search, sorry"))
+KeyFarm.OnEvent('Click', (*) => changeKeyFarm())
+;KeyFarm.OnEvent('Click', (*) => AddToLog("This has been disabled till I fix the pixel search, sorry"))
 
 SaveConfigBttn := MainGUI.Add("Button", "x700 y635 w95 h25 cffffff +Center", "Save config")
 SaveConfigBttn.OnEvent("Click", (*) => SaveConfigToFile("Lib\Settings\config.txt"))
@@ -131,7 +136,7 @@ changeKeyFarm() {
     global keyFarmEnabled := KeyFarm.Value
 }
 
-MainGUI.Show("x27 y15 w1150 h665")
+MainGUI.Show("x27 y15 w1150 h700")
 
 AddToLog(text) {
     global lastlog

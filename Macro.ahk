@@ -45,6 +45,7 @@ KeyText:="|<>*116$71.zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzztzbzzwyTDzzzly7zz
 global lose_streak := 0
 global keyFarmEnabled := KeyFarm.Value
 global keyFound := 1
+global unitPlacementDelay := UnitTimer.Value
 
 SetupMacro() {
     if ControlGetVisible(keybindsGui) {
@@ -129,10 +130,6 @@ GoToRaids() {
         }
         if (keyFarmEnabled && keyFound) {
             AddToLog("Attempting to go to Cursed Womb...")
-        } else {
-            AddToLog("Attempting to go to Cursed Infinite...")
-        }
-        if (keyFarmEnabled && keyFound) {
             ; go to cursed womb dungeon
             BetterClick(89, 302)
             Sleep 2000
@@ -149,29 +146,32 @@ GoToRaids() {
             SendInput ("{s up}")
             KeyWait "s" ; Wait for "d" to be fully processed
             Sleep 1200
-            ;BetterClick(216, 285) ; click key location
-            BetterClick(287, 285) ; click key #2 location
+            BetterClick(216, 285) ; click key location
             Sleep 200
-            if (ok:=FindText(&X, &Y, 433-150000, 305-150000, 433+150000, 305+150000, 0, 0, KeyText)) {
-                AddToLog("Found a key, attempting to start...")
-                BetterClick(350, 375) ; click select
-                Sleep 35000
+                if (ok:=FindText(&X, &Y, 433-150000, 305-150000, 433+150000, 305+150000, 0, 0, KeyText)) {
+                    AddToLog("Found a key, attempting to start...")
+                    BetterClick(350, 375) ; click select
+                    Sleep 35000
+                    break
+                } else {
+                    AddToLog("Didn't find cursed womb key, trying another..")
+                    BetterClick(287, 285) ; click key #2 location
+                    Sleep 200
+                }
+                if (ok:=FindText(&X, &Y, 433-150000, 305-150000, 433+150000, 305+150000, 0, 0, KeyText)) {
+                    AddToLog("Found a key, attempting to start...")
+                    BetterClick(418, 370) ; click select
+                    Sleep 35000
+                    break
+                } else {
+                    AddToLog("Didn't find a cursed womb key, returning to infinite...")
+                    BetterClick(661, 205)
+                    Sleep 200
+                    keyFound := 0
+                    break
+                }
             } else {
-                AddToLog("Didn't find cursed womb key, trying another..")
-                BetterClick(287, 285) ; click key #2 location
-                Sleep 200
-            }
-            if (ok:=FindText(&X, &Y, 433-150000, 305-150000, 433+150000, 305+150000, 0, 0, KeyText)) {
-                AddToLog("Found a key, attempting to start...")
-                BetterClick(418, 370) ; click select
-                Sleep 35000
-            } else {
-                AddToLog("Didn't find a cursed womb key, returning to infinite...")
-                BetterClick(661, 205)
-                Sleep 200
-                keyFound := 0
-            }
-        } else {
+            AddToLog("Attempting to go to Cursed Infinite...")
             ; go to play area
             BetterClick(89, 302) ; play
             Sleep 1000
@@ -434,8 +434,6 @@ TryPlacingUnits() {
     AddToLog("All slot placements and upgrades completed.")
 }
 
-
-
 UpgradeUnits() {
     global successfulCoordinates
 
@@ -508,6 +506,13 @@ ShouldStopUpgrading(sleepamount := 300) {
         BetterClick(485, 115)
         return true
     }
+    if CheckForLobbyButton() {
+        if (WebhookCheckbox.Value = 1) {
+            SendWebhook()
+        }
+        BetterClick(376, 117)
+        return true
+    }
 }
 
 OnSpawn() {
@@ -519,19 +524,26 @@ OnSpawn() {
 
 LookDown() {
     MouseMove(400, 300)
-    loop 20 {
-        SendInput("{WheelUp}")
-        Sleep 50
-    }
-    Sleep 200
-    MouseGetPos(&x, &y)
-    MouseMove(400, 300)
-    SendInput(Format("{Click {} {} Left}", x, y + 150))
+    Sleep 100
 
-    loop 20 {
-        SendInput("{WheelDown}")
+    ; Zoom in smoothly
+    Loop 10 {
+        Send "{WheelUp}"
         Sleep 50
     }
+
+    ; Look down
+    Click
+    MouseMove(400, 400)  ; Move mouse down to angle camera down
+    
+    ; Zoom back out smoothly
+    Loop 20 {
+        Send "{WheelDown}"
+        Sleep 50
+    }
+    
+    ; Move mouse back to center
+    MouseMove(400, 300)
 }
 
 LoadedLoop() {
@@ -563,11 +575,11 @@ PressVoteStart() {
 StartedLoop() {
     loop {
         Sleep 1000
-        if (ok := FindText(&X, &Y, 326, 60, 547, 173, 0, 0, VoteStart))
-        {
+        if (ok := FindText(&X, &Y, 326, 60, 547, 173, 0, 0, VoteStart)) {
             continue
         }
-        AddToLog("Game started")
+        AddToLog("Game started, waiting 6s for income")
+        Sleep(6000)
         break
     }
 }
@@ -639,6 +651,30 @@ SendChat() {
     Sleep 1200
     SendInput("{Enter}")
     Sleep 250
+}
+
+
+SortByPriority(&array, priorityMapping) {
+    AddToLog("Starting unit sorting by priority mapping")
+    sortedArray := []
+
+    for index, slot in priorityMapping {
+        foundSlot := false
+
+        for i, item in array {
+            if (item.slot = slot) {
+                sortedArray.Push(item)
+                foundSlot := true
+            }
+        }
+
+        if !foundSlot {
+            AddToLog("No units found for: " slot ". Moving onto next slot")
+        }
+    }
+
+    array := sortedArray
+    AddToLog("Finished sorting units, starting upgrading")
 }
 
 TPtoSpawn() {
@@ -757,28 +793,39 @@ OnSpawnSetup() {
     Sleep 200
     TPtoSpawn()
     Sleep 200
-    loop {
-        if PixelSearch(&Px, &Py, 340, 0, 520, 25, 0x091512, 3) {
-            AddToLog("Correct Angle")
-            break
+    if (keyFarmEnabled && keyFound) {
+        ; Walk to the right
+        SendInput ("{d down}")
+        sleep (3500)
+        SendInput ("{d up}")
+        Sleep 200
+        SendInput ("{w down}")
+        sleep (300)
+        SendInput ("{w up}")
+    } else {
+        loop {
+            if PixelSearch(&Px, &Py, 340, 0, 520, 25, 0x091512, 3) {
+                AddToLog("Correct Angle")
+                break
+            }
+            else {
+                AddToLog("Incorrect Angle. Turning again.")
+                SendInput ("{Left up}")
+                Sleep 200
+                SendInput ("{Left down}")
+                Sleep 750
+                SendInput ("{Left up}")
+                KeyWait "Left" ; Wait for key to be fully processed
+            }
         }
-        else {
-            AddToLog("Incorrect Angle. Turning again.")
-            SendInput ("{Left up}")
-            Sleep 200
-            SendInput ("{Left down}")
-            Sleep 750
-            SendInput ("{Left up}")
-            KeyWait "Left" ; Wait for key to be fully processed
-        }
+    
+        SendInput ("{d up}")
+        Sleep 100
+        SendInput ("{d down}")
+        Sleep 5000
+        SendInput ("{d up}")
+        KeyWait "d"
     }
-
-    SendInput ("{d up}")
-    Sleep 100
-    SendInput ("{d down}")
-    Sleep 5000
-    SendInput ("{d up}")
-    KeyWait "d"
 }
 
 Reconnect() {
@@ -817,4 +864,157 @@ HoldKey(key, duration) {
     Sleep duration
     SendInput ("{" key " up}")
     KeyWait key ; Wait for "d" to be fully processed
+}
+
+FindAndClickColor(targetColor := (0x091512), searchArea := [0, 0, A_ScreenWidth, A_ScreenHeight]) {
+    ; Extract the search area boundaries
+    x1 := searchArea[1], y1 := searchArea[2], x2 := searchArea[3], y2 := searchArea[4]
+
+    ; Perform the pixel search
+    if (PixelSearch(&foundX, &foundY, x1, y1, x2, y2, targetColor, 0)) {
+        ; Color found, click on the detected coordinates
+        ;BetterClick(foundX, foundY, "Right")
+        AddToLog("Color found and clicked at: X" foundX " Y" foundY)
+        return true
+
+    }
+}
+
+IsMaxed(coord) {
+    global maxedCoordinates
+    for _, maxedCoord in maxedCoordinates {
+        if (maxedCoord.x = coord.x && maxedCoord.y = coord.y) {
+            return true
+        }
+    }
+    return false
+}
+
+PlacementTimerSleep() { ; Added for custom dropdown support
+    if (unitPlacementDelay = 1) {
+        Sleep 1500
+    }
+    if (unitPlacementDelay = 2) {
+        Sleep 2000
+    }
+    if (unitPlacementDelay = 3) {
+        Sleep 2500
+    }
+    if (unitPlacementDelay = 4) {
+        Sleep 3000
+    }
+}
+
+UpgradeUnitsNew() {
+    if UUPCheckbox.Value = 1 {
+        global successfulCoordinates, maxedCoordinates, unitUpgradePrioritydropDowns
+        AddToLog("Beginning prioritized unit upgrades.")
+
+        priorityMapping := []
+        for index, dropDown in unitUpgradePrioritydropDowns {
+            priorityText := dropDown.Text
+            if priorityText && priorityText != "" {
+                priorityMapping.Push(priorityText)
+            }
+        }
+
+        SortByPriority(&successfulCoordinates, priorityMapping)
+
+        for coord in successfulCoordinates {
+            if IsMaxed(coord) {
+                AddToLog("Unit already maxed at: X" coord.x " Y" coord.y ". Skipping upgrade.")
+                continue
+            }
+            while !IsMaxUpgrade() {
+                UpgradeUnit(coord.x, coord.y)
+                if (IsMaxUpgrade()) {
+                    break
+                }
+                if ShouldStopUpgrading() {
+                    AddToLog("Found return to lobby, going back.")
+                    successfulCoordinates := []
+                    maxedCoordinates := []
+                    return LobbyLoop()
+                }
+
+                Sleep(200)
+
+                if (ok := FindText(&X, &Y, 334, 182, 450, 445, 0, 0, AutoAbility)) {
+                    BetterClick(373, 237)
+                }
+
+                BetterClick(348, 391) ; next
+                BetterClick(565, 563) ; move mouse
+                Reconnect()
+            }
+
+            if (ok := FindText(&X, &Y, 334, 182, 450, 445, 0, 0, AutoAbility)) ; USE ABILITY IF OFF
+            {
+                BetterClick(373, 237)
+            }
+
+            BetterClick(565, 563) ; move mouse
+            AddToLog("Max upgrade reached for: X" coord.x " Y" coord.y ". Moving onto next unit")
+            maxedCoordinates.Push(coord)
+        }
+
+        AddToLog("All units upgraded or maxed.")
+        while !ShouldStopUpgrading() {
+            BetterClick(348, 391) ; next
+            Sleep(200)
+        }
+
+        return LobbyLoop()
+    }
+    else
+    {
+        global successfulCoordinates
+        global maxedCoordinates
+
+        AddToLog("Beginning unit upgrades.")
+
+        while true { ; Infinite loop to ensure continuous checking
+            for index, coord in successfulCoordinates {
+
+                UpgradeUnit(coord.x, coord.y)
+
+                if ShouldStopUpgrading() {
+                    AddToLog("Found return to lobby, going back.")
+                    successfulCoordinates := []
+                    maxedCoordinates := []
+                    return LobbyLoop()
+                }
+
+                if IsMaxUpgrade() {
+                    AddToLog("Max upgrade reached for: X" coord.x " Y" coord.y)
+                    maxedCoordinates.Push(successfulCoordinates.Get(index))
+                    successfulCoordinates.RemoveAt(index) ; Remove the coordinate
+                    continue ; Skip to the next coordinate
+                }
+
+                Sleep(200)
+                if (ok := FindText(&X, &Y, 334, 182, 450, 445, 0, 0, AutoAbility)) ; USE ABILITY IF OFF
+                {
+                    BetterClick(373, 237)
+                }
+                BetterClick(348, 391) ; next
+                BetterClick(565, 563) ; move mouse
+                Reconnect()
+            }
+
+            ; If all units are maxed, still check for stopping condition
+            if successfulCoordinates.Length = 0 and maxedCoordinates.Length > 0 {
+                Reconnect()
+                BetterClick(348, 391) ; next
+                if ShouldStopUpgrading() {
+                    AddToLog("Stopping due to finding return to lobby button.")
+                    return LobbyLoop()
+                }
+                Sleep(2000) ; Prevent excessive looping
+
+            }
+
+            Reconnect()
+        }
+    }
 }
