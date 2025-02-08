@@ -363,7 +363,7 @@ TryPlacingUnits() {
                     BetterClick(210, 555) ; move mouse
                     if ShouldStopUpgrading(1) {
                         AddToLog("Stopping due to finding lobby  condition.")
-                        return Replaying()
+                        return keyFarmEnabled & keyFound ? LobbyLoop() : Replaying()
                     }
                     Reconnect()
                 }
@@ -379,8 +379,8 @@ TryPlacingUnits() {
                     }
                     BetterClick(210, 555) ; move mouse
                     if ShouldStopUpgrading(1) {
-                        AddToLog("Stopping due to finding lobby  condition.")
-                        return Replaying()
+                        AddToLog("Stopping due to finding lobby condition.")
+                        return keyFarmEnabled & keyFound ? LobbyLoop() : Replaying()
                     }
                     Hillx += step - 20
                     Tries += 1
@@ -411,7 +411,7 @@ TryPlacingUnits() {
                     BetterClick(565, 563) ; move mouse
                     if ShouldStopUpgrading(1) {
                         AddToLog("Stopping due to finding lobby  condition.")
-                        return Replaying()
+                        return keyFarmEnabled & keyFound ? LobbyLoop() : Replaying()
                     }
                     Reconnect()
                     x += step - 20 ; Move to the next column
@@ -446,7 +446,7 @@ UpgradeUnits() {
             if ShouldStopUpgrading() {
                 AddToLog("Found return to lobby, going back.")
                 successfulCoordinates := []
-                return Replaying()
+                return keyFarmEnabled & keyFound ? LobbyLoop() : Replaying()
             }
 
             if IsMaxUpgrade() {
@@ -470,7 +470,7 @@ UpgradeUnits() {
             BetterClick(720, 510)
             if ShouldStopUpgrading() {
                 AddToLog("Stopping due to finding return to lobby button.")
-                return Replaying()
+                return keyFarmEnabled & keyFound ? LobbyLoop() : Replaying()
             }
             Sleep(2000) ; Prevent excessive looping
 
@@ -502,7 +502,7 @@ ShouldStopUpgrading(sleepamount := 300) {
         if (WebhookCheckbox.Value = 1) {
             SendWebhook()
         }
-        if (keyFound) {
+        if (keyFarmEnabled && keyFound) {
             BetterClick(376, 117) ;Click Lobby
         } else {
             BetterClick(485, 115) ;Click Replay
@@ -945,8 +945,8 @@ UpgradeUnitsNew() {
 
         AddToLog("All units upgraded or maxed.")
         while !ShouldStopUpgrading() {
-            BetterClick(348, 391) ; next
-            Sleep(200)
+                BetterClick(348, 391) ; next
+                Sleep(200)
         }
 
         return LobbyLoop()
