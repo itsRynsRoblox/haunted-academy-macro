@@ -205,7 +205,7 @@ GoToRaids() {
     }
     LoadedLoop()
     OnSpawnSetup()
-    ;PressVoteStart()
+    PressVoteStart()
     StartedLoop()
     TryPlacingUnits()
 
@@ -225,8 +225,9 @@ Replaying() {
         sleep 5000 ; cd wont spam loops
     }
     LoadedLoop()
-    StartedLoop()
     OnSpawnSetup()
+    PressVoteStart()
+    StartedLoop()
     TryPlacingUnits()
 }
 
